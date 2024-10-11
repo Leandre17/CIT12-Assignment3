@@ -25,28 +25,28 @@ while (true)
 }
 
 static Response HandleRequest(Request request) {
-    if (request == null) return new Response { status = "4 Bad Request", body = "" };
+    if (request == null) return new Response { status = "4 missing method", body = "" };
     switch (request.method) {
         case "read":
             return new Response { status = "1 OK", body = "" };
         case "create":
             if (string.IsNullOrEmpty(request.body))
-                return new Response { status = "4 Bad Request", body = "missing body" };
-            return new Response { status = "1 OK", body = "" };
+                return new Response { status = "4 missing body", body = "" };
+            return new Response { status = "2 Created", body = "" };
         case "update":
             if (string.IsNullOrEmpty(request.body))
-                return new Response { status = "4 Bad Request", body = "missing body" };
-            return new Response { status = "1 OK", body = "" };
+                return new Response { status = "4 missing body", body = "" };
+            return new Response { status = "3 Updated", body = "" };
         case "delete":
             if (string.IsNullOrEmpty(request.body))
-                return new Response { status = "4 Bad Request", body = "missing body" };
+                return new Response { status = "4 missing body", body = "" };
             return new Response { status = "1 OK", body = "" };
         case "echo":
             if (string.IsNullOrEmpty(request.body))
-                return new Response { status = "4 Bad Request", body = "missing body" };
+                return new Response { status = "4 missing body", body = "" };
             return new Response { status = "1 OK", body = "" };
         default:
-            return new Response { status = "4 Bad Request", body = "invalid method" };
+            return new Response { status = "4 illegal method", body = "" };
     }
 }
 
@@ -54,22 +54,22 @@ static Response HandleRequest(Request request) {
 
 public class Request
 {
-    public string method { get; set; }
-    public string path { get; set; }
-    public string date { get; set; }
-    public string body { get; set; }
+    public string? method { get; set; }
+    public string? path { get; set; }
+    public string? date { get; set; }
+    public string? body { get; set; }
 }
 
 // Response class to format outgoing responses
 public class Response
 {
-    public string status { get; set; }
-    public string body { get; set; }
+    public string? status { get; set; }
+    public string? body { get; set; }
 }
 
 // Category class for handling category objects
 public class Category
 {
     public int cid { get; set; }
-    public string name { get; set; }
+    public string? name { get; set; }
 }
