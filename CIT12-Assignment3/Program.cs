@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
-TcpListener listener = new TcpListener(IPAddress.Any, 5000);
+TcpListener listener = new(IPAddress.Loopback, 5000);
 listener.Start();
 Console.WriteLine("Server is listening on port 5000...");
 
@@ -14,17 +14,41 @@ while (true)
     byte[] buffer = new byte[1024];
     int byteCount = stream.Read(buffer);
     string requestString = Encoding.UTF8.GetString(buffer, 0, byteCount);
-
+    Console.WriteLine(requestString);
     Request request = JsonSerializer.Deserialize<Request>(requestString);
 
-    Response response = new Response { status = "4 Bad Request", body = "missing method" };
+    Response response = HandleRequest(request);
     string msg = JsonSerializer.Serialize(response);
+    Console.WriteLine(msg);
     var buffer2 = Encoding.UTF8.GetBytes(msg);
     stream.Write(buffer2);
 }
 
-
-
+static Response HandleRequest(Request request) {
+    if (request == null) return new Response { status = "4 Bad Request", body = "" };
+    switch (request.method) {
+        case "read":
+            return new Response { status = "1 OK", body = "" };
+        case "create":
+            if (string.IsNullOrEmpty(request.body))
+                return new Response { status = "4 Bad Request", body = "missing body" };
+            return new Response { status = "1 OK", body = "" };
+        case "update":
+            if (string.IsNullOrEmpty(request.body))
+                return new Response { status = "4 Bad Request", body = "missing body" };
+            return new Response { status = "1 OK", body = "" };
+        case "delete":
+            if (string.IsNullOrEmpty(request.body))
+                return new Response { status = "4 Bad Request", body = "missing body" };
+            return new Response { status = "1 OK", body = "" };
+        case "echo":
+            if (string.IsNullOrEmpty(request.body))
+                return new Response { status = "4 Bad Request", body = "missing body" };
+            return new Response { status = "1 OK", body = "" };
+        default:
+            return new Response { status = "4 Bad Request", body = "invalid method" };
+    }
+}
 
 
 
