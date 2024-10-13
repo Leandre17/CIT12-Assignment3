@@ -42,9 +42,7 @@ static Response HandleRequest(Request request) {
                 return new Response { status = "4 missing body", body = "" };
             return new Response { status = "1 OK", body = "" };
         case "echo":
-            if (string.IsNullOrEmpty(request.body))
-                return new Response { status = "4 missing body", body = "" };
-            return new Response { status = "1 OK", body = "" };
+            return new Response { status = "1 OK", body = request.body };
         default:
             return new Response { status = "4 illegal method", body = "" };
     }
