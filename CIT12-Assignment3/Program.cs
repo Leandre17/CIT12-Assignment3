@@ -32,14 +32,21 @@ static Response HandleRequest(Request request) {
         case "create":
             if (string.IsNullOrEmpty(request.body))
                 return new Response { status = "4 missing body", body = "" };
+            else if (request.path != "/api/categories") {
+                return new Response { status = "4 Bad Request", body = "invalid path" };
+            }
             return new Response { status = "2 Created", body = "" };
         case "update":
             if (string.IsNullOrEmpty(request.body))
                 return new Response { status = "4 missing body", body = "" };
+            if (string.IsNullOrEmpty(request.path) || !request.path.StartsWith("/api/categories/"))
+                return new Response { status = "4 Bad Request", body = "missing or invalid path" };
             return new Response { status = "3 Updated", body = "" };
         case "delete":
             if (string.IsNullOrEmpty(request.body))
                 return new Response { status = "4 missing body", body = "" };
+            if (string.IsNullOrEmpty(request.path) || !request.path.StartsWith("/api/categories/"))
+                return new Response { status = "4 Bad Request", body = "missing or invalid path" };
             return new Response { status = "1 OK", body = "" };
         case "echo":
             return new Response { status = "1 OK", body = request.body };
