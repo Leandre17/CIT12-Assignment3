@@ -31,11 +31,24 @@ while (true)
     stream.Write(buffer2);
 }
 
-static Response HandleRequest(Request request) {
+Response HandleRequest(Request request) {
     if (request == null) return new Response { status = "4 missing method", body = "" };
     switch (request.method) {
         case "read":
-            return new Response { status = "1 OK", body = "" };
+            if (request.path == "/api/categories")
+                return new Response { status = "1 Ok", body = JsonSerializer.Serialize(categories) };
+            if (request.path.StartsWith("/api/categories/")) {
+                string[] pathParts = request.path.Split('/');
+                if (pathParts.Length == 3 && int.TryParse(pathParts[2], out int cid)) {
+                    var category = categories.Find(c => c.cid == cid);
+                    if (category != null)
+                        return new Response { status = "1 Ok", body = JsonSerializer.Serialize(category) };
+                    else
+                        return new Response { status = "5 Not Found", body = "" };
+                    
+                }
+            }
+            return new Response { status = "4 Bad Request", body = "invalid path" };
         case "create":
             if (string.IsNullOrEmpty(request.body))
                 return new Response { status = "4 missing body", body = "" };
