@@ -33,13 +33,15 @@ while (true)
 
 Response HandleRequest(Request request) {
     if (request == null) return new Response { status = "4 missing method", body = "" };
+    string[] pathParts = request.path.Split('/');
+    int cid = -1;
     switch (request.method) {
         case "read":
             if (request.path == "/api/categories")
                 return new Response { status = "1 Ok", body = JsonSerializer.Serialize(categories) };
-            if (request.path.StartsWith("/api/categories/")) {
-                string[] pathParts = request.path.Split('/');
-                if (pathParts.Length == 3 && int.TryParse(pathParts[2], out int cid)) {
+            else if (request.path.StartsWith("/api/categories/")) {
+                pathParts = request.path.Split('/');
+                if (pathParts.Length == 3 && int.TryParse(pathParts[2], out cid)) {
                     var category = categories.Find(c => c.cid == cid);
                     if (category != null)
                         return new Response { status = "1 Ok", body = JsonSerializer.Serialize(category) };
@@ -65,15 +67,36 @@ Response HandleRequest(Request request) {
         case "update":
             if (string.IsNullOrEmpty(request.body))
                 return new Response { status = "4 missing body", body = "" };
-            if (string.IsNullOrEmpty(request.path) || !request.path.StartsWith("/api/categories/"))
+            else if (string.IsNullOrEmpty(request.path) || !request.path.StartsWith("/api/categories/"))
                 return new Response { status = "4 Bad Request", body = "missing or invalid path" };
-            return new Response { status = "3 Updated", body = "" };
+            pathParts = request.path.Split('/');
+            if (pathParts.Length == 3 && int.TryParse(pathParts[2], out cid)) {
+                var category = categories.Find(c => c.cid == cid);
+                if (category != null) {
+                    var updatedCategory = JsonSerializer.Deserialize<Category>(request.body);
+                    if (updatedCategory != null && !string.IsNullOrEmpty(updatedCategory.name)) {
+                        category.name = updatedCategory.name;
+                        return new Response { status = "3 Updated", body = "" };
+                    }
+                } else
+                    return new Response { status = "5 Not Found", body = "" };
+            }
+            return new Response { status = "4 Bad Request", body = "invalid path or body" };
         case "delete":
             if (string.IsNullOrEmpty(request.body))
                 return new Response { status = "4 missing body", body = "" };
-            if (string.IsNullOrEmpty(request.path) || !request.path.StartsWith("/api/categories/"))
+            else if (string.IsNullOrEmpty(request.path) || !request.path.StartsWith("/api/categories/"))
                 return new Response { status = "4 Bad Request", body = "missing or invalid path" };
-            return new Response { status = "1 OK", body = "" };
+            pathParts = request.path.Split('/');
+            if (pathParts.Length == 3 && int.TryParse(pathParts[2], out cid)) {
+                var category = categories.Find(c => c.cid == cid);
+                if (category != null) {
+                    categories.Remove(category);
+                    return new Response { status = "1 Ok", body = "" };
+                } else
+                    return new Response { status = "5 Not Found", body = "" };
+            }
+            return new Response { status = "4 Bad Request", body = "invalid path" };
         case "echo":
             return new Response { status = "1 OK", body = request.body };
         default:
