@@ -7,6 +7,13 @@ TcpListener listener = new(IPAddress.Loopback, 5000);
 listener.Start();
 Console.WriteLine("Server is listening on port 5000...");
 
+List<Category> categories = new List<Category>
+    {
+        new Category { cid = 1, name = "Beverages" },
+        new Category { cid = 2, name = "Condiments" },
+        new Category { cid = 3, name = "Confections" }
+};
+
 while (true)
 {
     TcpClient client = await listener.AcceptTcpClientAsync();
@@ -35,7 +42,13 @@ static Response HandleRequest(Request request) {
             else if (request.path != "/api/categories") {
                 return new Response { status = "4 Bad Request", body = "invalid path" };
             }
-            return new Response { status = "2 Created", body = "" };
+            var newCategory = JsonSerializer.Deserialize<Category>(request.body);
+            if (newCategory == null || string.IsNullOrEmpty(newCategory.name)) {
+                return new Response { status = "4 Bad Request", body = "invalid body" };
+            }
+            newCategory.cid = categories.Count + 1;
+            categories.Add(newCategory);
+            return new Response { status = "2 Created", body = JsonSerializer.Serialize(newCategory)};
         case "update":
             if (string.IsNullOrEmpty(request.body))
                 return new Response { status = "4 missing body", body = "" };
